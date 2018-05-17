@@ -1,0 +1,16 @@
+<?php
+$finder = PhpCsFixer\Finder::create()
+    ->in(__DIR__ . DIRECTORY_SEPARATOR . 'src')
+;
+
+return PhpCsFixer\Config::create()
+	->setRiskyAllowed(true)
+	->setUsingCache(false)
+	->registerCustomFixers([
+		new \PhpCsFixer\Fixer\FunctionNotation\NoDefaultArgumentValueFixer,
+	])
+    ->setRules([
+        'Custom/no_default_argument_value' => true
+    ])
+    ->setFinder($finder)
+;

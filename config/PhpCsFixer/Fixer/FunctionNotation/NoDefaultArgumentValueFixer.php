@@ -23,15 +23,20 @@ use PhpCsFixer\Tokenizer\Tokens;
  * @author Lucas Manzke <lmanzke@outlook.com>
  * @author Gregor Harlan <gharlan@web.de>
  */
-final class NoUnreachableDefaultArgumentValueFixer extends AbstractFixer
+final class NoDefaultArgumentValueFixer extends AbstractFixer
 {
+    public function getName(): string
+    {
+        return 'Custom/no_default_argument_value';
+    }
+
     /**
      * {@inheritdoc}
      */
     public function getDefinition()
     {
         return new FixerDefinition(
-            'In function arguments there must not be arguments with default values before non-default ones.',
+            'In function arguments there must not be arguments without default values.',
             [
                 new CodeSample(
                     '<?php

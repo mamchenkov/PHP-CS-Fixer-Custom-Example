@@ -6,5 +6,10 @@
 	"scripts": {
 		"test": "phpunit tests/",
 		"fix": "echo Resetting and Fixing && cp -f tests/data/Original.php src/File.php"
+	},
+    "autoload": {
+        "psr-4": {
+            "PhpCsFixer\\": "config/PhpCsFixer"
+        }
 	}
 }

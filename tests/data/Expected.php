@@ -5,7 +5,7 @@ function test_a($id=null,$txt=null){
         if($txt=='')$txt='Added';
         $arr=[];
         $arr[out]="$id One";
-        $arr[out]=$arr[out]."Two $txt";
+        $arr[out].="Two $txt";
         $res=$arr[out];
         return $res;
 }

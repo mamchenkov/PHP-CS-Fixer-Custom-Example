@@ -89,118 +89,23 @@ function example($foo = "two words", $bar) {}
      */
     private function fixFunctionDefinition(Tokens $tokens, $startIndex, $endIndex)
     {
-        $lastArgumentIndex = $this->getLastNonDefaultArgumentIndex($tokens, $startIndex, $endIndex);
-
-        if (!$lastArgumentIndex) {
-            return;
-        }
-
-        for ($i = $lastArgumentIndex; $i > $startIndex; --$i) {
+		for ($i = $startIndex; $i <= $endIndex; $i++) {
             $token = $tokens[$i];
 
-            if ($token->isGivenKind(T_VARIABLE)) {
-                $lastArgumentIndex = $i;
+			if (!$token->isGivenKind(T_VARIABLE)) {
+				continue;
+			}
 
-                continue;
-            }
+			$nextToken = $tokens[$tokens->getNextMeaningfulToken($i)];
 
-            if (!$token->equals('=') || $this->isTypehintedNullableVariable($tokens, $i)) {
-                continue;
-            }
+			if (in_array($nextToken->getContent(), ['='])) {
+				continue;
+			}
 
-            $endIndex = $tokens->getPrevTokenOfKind($lastArgumentIndex, [',']);
-            $endIndex = $tokens->getPrevMeaningfulToken($endIndex);
-            $this->removeDefaultArgument($tokens, $i, $endIndex);
-        }
-    }
+			$content = $token->getContent() . '=null';
+			$token->setContent($content);
 
-    /**
-     * @param Tokens $tokens
-     * @param int    $startIndex
-     * @param int    $endIndex
-     *
-     * @return null|int
-     */
-    private function getLastNonDefaultArgumentIndex(Tokens $tokens, $startIndex, $endIndex)
-    {
-        for ($i = $endIndex - 1; $i > $startIndex; --$i) {
-            $token = $tokens[$i];
-
-            if ($token->equals('=')) {
-                $i = $tokens->getPrevMeaningfulToken($i);
-
-                continue;
-            }
-
-            if ($token->isGivenKind(T_VARIABLE) && !$this->isEllipsis($tokens, $i)) {
-                return $i;
-            }
-        }
-    }
-
-    /**
-     * @param Tokens $tokens
-     * @param int    $variableIndex
-     *
-     * @return bool
-     */
-    private function isEllipsis(Tokens $tokens, $variableIndex)
-    {
-        return $tokens[$tokens->getPrevMeaningfulToken($variableIndex)]->isGivenKind(T_ELLIPSIS);
-    }
-
-    /**
-     * @param Tokens $tokens
-     * @param int    $startIndex
-     * @param int    $endIndex
-     */
-    private function removeDefaultArgument(Tokens $tokens, $startIndex, $endIndex)
-    {
-        for ($i = $startIndex; $i <= $endIndex;) {
-            $tokens->clearTokenAndMergeSurroundingWhitespace($i);
-            $this->clearWhitespacesBeforeIndex($tokens, $i);
-            $i = $tokens->getNextMeaningfulToken($i);
-        }
-    }
-
-    /**
-     * @param Tokens $tokens
-     * @param int    $index  Index of "="
-     *
-     * @return bool
-     */
-    private function isTypehintedNullableVariable(Tokens $tokens, $index)
-    {
-        $nextToken = $tokens[$tokens->getNextMeaningfulToken($index)];
-
-        if (!$nextToken->equals([T_STRING, 'null'], false)) {
-            return false;
-        }
-
-        $variableIndex = $tokens->getPrevMeaningfulToken($index);
-
-        $searchTokens = [',', '(', [T_STRING], [CT::T_ARRAY_TYPEHINT], [T_CALLABLE]];
-        $typehintKinds = [T_STRING, CT::T_ARRAY_TYPEHINT, T_CALLABLE];
-
-        $prevIndex = $tokens->getPrevTokenOfKind($variableIndex, $searchTokens);
-
-        return $tokens[$prevIndex]->isGivenKind($typehintKinds);
-    }
-
-    /**
-     * @param Tokens $tokens
-     * @param int    $index
-     */
-    private function clearWhitespacesBeforeIndex(Tokens $tokens, $index)
-    {
-        $prevIndex = $tokens->getNonEmptySibling($index, -1);
-        if (!$tokens[$prevIndex]->isWhitespace()) {
-            return;
-        }
-
-        $prevNonWhiteIndex = $tokens->getPrevNonWhitespace($prevIndex);
-        if (null === $prevNonWhiteIndex || !$tokens[$prevNonWhiteIndex]->isComment()) {
-            $tokens->clearTokenAndMergeSurroundingWhitespace($prevIndex);
-        }
+			$tokens[$i] = $token;
+		}
     }
 }
